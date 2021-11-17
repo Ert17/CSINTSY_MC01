@@ -1,7 +1,5 @@
 import java.util.*;
 
-//entities : MINER, BEACON, PIT, GOLD
-
 public class Inputs{
 
     public static void main(String[] args) {
