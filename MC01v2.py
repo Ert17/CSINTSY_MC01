@@ -3,26 +3,74 @@ import random
 miner = [[1, 1], [1, 2]]
 #        pX  pY  fX  fY
 #     [0,0][0,1][1,0][1,1]
+
 direction = 1 # 1 - right, 2 - down, 3 - left, 4 - up
 gold = []
 beacons = []
 pits = []
-pastCoors = [] #array for the coordinates na nadaan na
+pastCoors = [[1,1]] #array for the coordinates na nadaan na
 scanCtr = 0
 rotateCtr = 0
 moveCtr = 0
 
+# returns 1 if miner will be OOB, else 0
+def OOB():
+    global miner
+    global direction
+    global grid
+
+    #Check miner if out of bounds
+    if (miner[0][0] == 1 and direction == 4):
+        if (miner[0][1] == 1 and direction == 3): #top left
+            return 1
+        if (miner[0][1] == grid and direction == 1): #top right
+            return 1
+        return 1
+    elif (miner[0][1] == 1 and direction == 3):
+        if (miner[1][0] == 1 and direction == 4): # top left
+            return 1
+        if (miner[1][0] == grid and direction == 2): #bottom left
+            return 1
+        return 1
+    elif (miner[0][0] == grid and direction == 2):
+        if (miner[0][1] == 1 and direction == 3): # bottom left
+            return 1
+        if (miner[0][1] == grid and direction == 1): #bottom right
+            return 1
+        return 1
+    elif (miner[0][1] == grid and direction == 1):
+        if (miner[0][0] == 1 and direction == 4): # top right
+            return 1
+        if (miner[0][0] == grid and direction == 2): #bottom right
+            return 1
+        return 1
+
+    return 0
+
 def randomLevel():
+    print("in randomLevel")
+    global miner
+    global pastCoors
+
     for pastCoor in pastCoors:
         if miner[1][0] == pastCoor[0] and miner[1][1] == pastCoor[1]:
-            return 2; #rotate
-    return 3; #move
+            print ("in pastCoor func")
+            return 2 #rotate
+
+    # if out of bounds
+    bounds = OOB()
+    if bounds:
+        print("in OOB func")
+        return 2 #rotate
+
+    print("Returning Move")
+    return 3 #move
 
 def smartLevel():
     act = int(input("Act: "))
     return act
 
-def scan(grid):
+def scan(grid): #Miner picked 1
     global direction
     global miner
     global scanCtr
@@ -83,7 +131,7 @@ def scan(grid):
 
     #return nearest entity
 
-def rotate():
+def rotate(): #Miner picked 2
     global miner
     global direction
     frontX = miner[0][0]
@@ -117,9 +165,12 @@ def rotate():
     global rotateCtr
     rotateCtr += 1
 
-def move():
+def move(): #Miner picked 3
     global miner
     global direction
+
+    pastCoors.append([miner[0][0],miner[0][1]])
+
     #set position to front
     miner[0][0] = miner[1][0]
     miner[0][1] = miner[1][1]
@@ -136,6 +187,7 @@ def move():
         miner[1][1] = frontY - 1
     elif direction == 4:  # up
         miner[1][0] = frontX - 1
+
 
 ''' ------------ INITIALIZATION --------------- '''
 valid = False
@@ -183,7 +235,6 @@ for i in range(pitval):
             print("Invalid coordinate for pit")
 
 for i in range(beaval):
-
     valid = False
     while (not valid):
 
@@ -204,29 +255,34 @@ for i in range(beaval):
         else:
             print("Invalid coordinate for beacon.")
 
-''' ----------------------------------------------'''
-
+valid = False
 level = 0
-while True:
+while (not valid):
     print("[1] Random\n[2] Smart")
     level = int(input("Choose Level: "))
     if level == 1 or level == 2:
-        break
+        valid = True
     else:
         print("Invalid Input")
 
+''' --------------------MAIN--------------------------'''
 checker = True
 print("start: " + str(miner) + " direction: " + str(direction))
 act = 0
-while checker:
-    
-    if level == 1:
 
-        # add coordinate nung front
+while checker:
+
+    #next = input("Next?")
+
+    if level == 1:
+        # add current front to PastCoors
+        #pastCoors.append([miner[0][0],miner[0][1]])
+        # checks if Miner has been to Front coordinate
         act = randomLevel()
     elif level == 2:
         act = smartLevel()
 
+    #Miner Moves
     if (act == 1): # Scan
         # print result
         result = scan(grid)
@@ -239,68 +295,34 @@ while checker:
         #act += 1
 
     elif (act == 3): # Move
+        move()
+        print("normal move: " + str(miner) + " direction: " + str(direction))
        # 1 - right, 2 - down, 3 - left, 4 - up
         # if edge -> rotate x 1
         moveCtr += 1
 
-        #Check miner if out of bounds
-        if (miner[0][0] == 1 and direction == 4):
-            if (miner[0][1] == 1 and direction == 3): #top left
-                print("nasa-edge: " + str(miner) + " direction: " + str(direction))
-                break
-            if (miner[0][1] == grid and direction == 1): #top right
-                print("nasa-edge: " + str(miner) + " direction: " + str(direction))
-                break
-        elif (miner[0][1] == 1 and direction == 3):
-            if (miner[1][0] == 1 and direction == 4): # top left
-                print("nasa-edge: " + str(miner) + " direction: " + str(direction))
-                break
-            if (miner[1][0] == grid and direction == 2): #bottom left
-                print("nasa-edge: " + str(miner) + " direction: " + str(direction))
-                break
-        elif (miner[0][0] == grid and direction == 2):
-            if (miner[0][1] == 1 and direction == 3): # bottom left
-                print("nasa-edge: " + str(miner) + " direction: " + str(direction))
-                break
-            if (miner[0][1] == grid and direction == 1): #bottom right
-                print("nasa-edge: " + str(miner) + " direction: " + str(direction))
-                break
-        elif (miner[0][1] == grid and direction == 1):
-            if (miner[0][0] == 1 and direction == 4): # top right
-                print("nasa-edge: " + str(miner) + " direction: " + str(direction))
-                break
-            if (miner[0][0] == grid and direction == 2): #bottom right
-                print("nasa-edge: " + str(miner) + " direction: " + str(direction))
-                break
-        else:
-            move()
-            print("normal move: " + str(miner) + " direction: " + str(direction))
+        '''---------CHECKERS-----------'''
+    #if gold
+    if miner[0][0] == gold[0] and miner[0][1] == gold[1]:
+        print("yey winner: " + str(miner) + " direction: " + str(direction))
+        checker = False
 
-        #if gold
-        if miner[0][0] == gold[0] and miner[0][1] == gold[1]:
-            print("yey winner: " + str(miner) + " direction: " + str(direction))
+    #if pit
+    for p in pits:
+        if miner[0][0] == p[0] and miner[0][1] == p[1]:
             checker = False
+            print("ew loser" + str(miner) + " direction: " + str(direction))
 
-        #if pit
-        for p in pits:
-            if miner[0][0] == p[0] and miner[0][1] == p[1]:
-                checker = False
-                print("ew loser" + str(miner) + " direction: " + str(direction))
+    #if beacon
+    for b in beacons:
+        if miner[0][0] == b[0] and miner[0][1] == b[1]:
+            #gold - beacon?
+            a = abs(gold[0] - miner[0][0])
+            b = abs(gold[1] - miner[0][1])
+            beacon = a + b
 
-        #if beacon
-        for b in beacons:
-            if miner[0][0] == b[0] and miner[0][1] == b[1]:
-                #gold - beacon?
-                a = abs(gold[0] - miner[0][0])
-                b = abs(gold[1] - miner[0][1])
-                beacon = a + b
-
-                # value of m; beacon's distance from Gold
-                print("Beacon: M is " + str(beacon))
-
-
-                # print("may result dito"  + str(miner) + " direction: " + str(direction))
-                # print kung gano kalayo beacon
+            # value of m; beacon's distance from Gold
+            print("Beacon: M is " + str(beacon))
 
 print("Total Scan: " + str(scanCtr))
 print("Total Rotate: " + str(rotateCtr))

@@ -43,6 +43,14 @@ totalCtLbl = Label(statFrame, text="0").grid(row=3, column=1)
 
 topLvl = Toplevel()
 
+Menubar = Menu(topLvl)
+Filemenu = Menu(topLvl, tearoff=0)
+Filemenu.add_command(label="New Grid")
+Filemenu.add_separator()
+Filemenu.add_command(label="Exit", command=root.quit)
+Menubar.add_cascade(label="File", menu=Filemenu)
+topLvl.config(menu=Menubar)
+
 GMLbl = Label(topLvl, text="Gold Miner", font=('Arial', 32, 'bold')).grid(row=0, columnspan=3)
 GridLbl = Label(topLvl, text="Grid Size").grid(row=1)
 GoldLbl = Label(topLvl, text="Gold Pit Coordinate").grid(row=2)
