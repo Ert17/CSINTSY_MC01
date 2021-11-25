@@ -275,9 +275,6 @@ while checker:
     #next = input("Next?")
 
     if level == 1:
-        # add current front to PastCoors
-        #pastCoors.append([miner[0][0],miner[0][1]])
-        # checks if Miner has been to Front coordinate
         act = randomLevel()
     elif level == 2:
         act = smartLevel()
