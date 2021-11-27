@@ -4,6 +4,8 @@ miner = [[1, 1], [1, 2]]
 #        pX  pY  fX  fY
 #     [0,0][0,1][1,0][1,1]
 
+
+
 direction = 1 # 1 - right, 2 - down, 3 - left, 4 - up
 gold = []
 beacons = []
@@ -12,6 +14,7 @@ pastCoors = [[1,1]] #array for the coordinates na nadaan na
 scanCtr = 0
 rotateCtr = 0
 moveCtr = 0
+scanChecker = 0
 
 # returns 1 if miner will be OOB, else 0
 def OOB():
@@ -67,6 +70,27 @@ def randomLevel():
     return 3 #move
 
 def smartLevel():
+    print("in smartLevel")
+    global miner
+    global pastCoors
+    global scanChecker
+
+
+    for pastCoor in pastCoors:
+        if miner[1][0] == pastCoor[0] and miner[1][1] == pastCoor[1]:
+            print ("in pastCoor func")
+            return 2 #rotate
+
+    # if out of bounds
+    bounds = OOB()
+    if bounds:
+        print("in OOB func")
+        return 2 #rotate
+
+    print("Returning Move")
+    return 3 #move
+
+def userInputLevel():
     act = int(input("Act: "))
     return act
 
@@ -188,10 +212,20 @@ def move(): #Miner picked 3
     elif direction == 4:  # up
         miner[1][0] = frontX - 1
 
+def beacon(gold, miner):
+    #Shortest distance of beacon to gold
+    a = abs(gold[0] - miner[0])
+    b = abs(gold[1] - miner[1])
+    beacon = a + b
+    print("nasa beacon function")
+
+    return beacon
+
 
 ''' ------------ INITIALIZATION --------------- '''
 valid = False
 grid = 8 # default value
+
 while (not valid):
     grid = int(input("Input grid size: "))
     if(grid >= 8 and grid <= 64):
@@ -199,9 +233,14 @@ while (not valid):
 print("grid size is " + str(grid))
 
 valid = False
-while (not valid):
-    goldX = int(input("Input gold X coordinate: "))
-    goldY = int(input("Input gold Y coordinate: "))
+goldX = 1
+goldY = 1
+while ((goldX == 1 and goldY == 1)):
+    # As long as not 1,1 and greater than 0 and less than grid size -> accept random number
+    # goldX = int(input("Input gold X coordinate: "))
+    # goldY = int(input("Input gold Y coordinate: "))
+    goldX = random.randint(1, grid)
+    goldY = random.randint(1, grid)
 
     if((goldX > 0 and goldY > 0) and (goldX <= grid and goldY <= grid)):
         valid = True
@@ -223,44 +262,78 @@ if beaval < 1:
 print("# of Pits: " + str(pitval))
 print("# of Beacons: " + str(beaval))
 
+for i in range(beaval):
+
+    # as long as not miner position and gold position;
+    # as long as greater than 0
+    # as long as less that or equal to grid size
+    #beaX = int(input("Input Beacon X Coordinate: "))
+    #beaY = int(input("Input Beacon Y Coordinate: "))
+    duplicate = False
+
+    while not duplicate:
+        beaX = random.randint(1, grid)
+        beaY = random.randint(1, grid)
+
+        if beaX == 1 and beaY == 1: # If beacon is in miner position
+            duplicate = True
+        elif beaX == gold[0] and beaY == gold[1]: # If same coordinate with gold
+            duplicate = True
+        elif len(beacons) > 1:
+            # To check the coordinates of other beacons if same
+            for beacon in beacons:
+                if beaX == beacon[0] and beaY == beacon[1]:
+                    duplicate = True
+
+        if duplicate is False:
+            beacons.append([beaX,beaY])
+            print("Beacon added: " + str(beacons))
+            break
+        else:
+            print("Invalid coordinate for beacon")
+
+
+    #        for p in pits:
+    #            if beaX == p[0] and beaY == p[1]:
+    #                duplicate = True
+
+
 for i in range(pitval):
-    valid = False
-    while (not valid):
-        pitX = int(input("Input Pit X Coordinate: "))
-        pitY = int(input("Input Pit Y Coordinate: "))
-        if((pitX > 0 and pitY > 0) and (pitX <= grid and pitY <= grid) and (pitX != gold[0] and pitY != gold[1])):
+
+    '''---asking for pit--'''
+        # as long as not miner, gold, and beacon/s position
+        # as long as greater than 0
+        # as long as less than or equal to grid size
+    duplicate = False
+    while not duplicate:
+        pitX = random.randint(1, grid)
+        pitY = random.randint(1, grid)
+
+        if pitX == 1 and pitY == 1: # If beacon is in miner position
+            duplicate = True
+        elif pitX == gold[0] and pitY == gold[1]: # If same coordinate with gold
+            duplicate = True
+            # To check the coordinates of other beacons if same
+        for beacon in beacons:
+            if pitX == beacon[0] and pitY == beacon[1]:
+                duplicate = True
+        if len(pits) > 1:
+            for pit in pits:
+                if pitX == pit[0] and pitY == pit[1]:
+                    duplicate = True
+
+        if duplicate is False:
             pits.append([pitX,pitY])
-            valid = True
+            print("Pits added: " + str(pits))
+            break
         else:
             print("Invalid coordinate for pit")
 
-for i in range(beaval):
-    valid = False
-    while (not valid):
-
-        beaX = int(input("Input Beacon X Coordinate: "))
-        beaY = int(input("Input Beacon Y Coordinate: "))
-        duplicate = False
-
-        for p in pits:
-            if beaX == p[0] and beaY == p[1]:
-                duplicate = True
-
-        if beaX == gold[0] and beaY == gold[1]:
-            duplicate = True
-
-        if (not duplicate):
-            beacons.append([beaX,beaY])
-            valid = True
-        else:
-            print("Invalid coordinate for beacon.")
-
-valid = False
 level = 0
 while (not valid):
-    print("[1] Random\n[2] Smart")
+    print("[1] Random\n[2] Smart\n[3] User Input")
     level = int(input("Choose Level: "))
-    if level == 1 or level == 2:
+    if level == 1 or level == 2 or level == 3:
         valid = True
     else:
         print("Invalid Input")
@@ -278,6 +351,8 @@ while checker:
         act = randomLevel()
     elif level == 2:
         act = smartLevel()
+    elif level == 3:
+        act = userInputLevel()
 
     #Miner Moves
     if (act == 1): # Scan
@@ -313,13 +388,9 @@ while checker:
     #if beacon
     for b in beacons:
         if miner[0][0] == b[0] and miner[0][1] == b[1]:
-            #gold - beacon?
-            a = abs(gold[0] - miner[0][0])
-            b = abs(gold[1] - miner[0][1])
-            beacon = a + b
-
+            beaconFinal = beacon(gold, miner[0])
             # value of m; beacon's distance from Gold
-            print("Beacon: M is " + str(beacon))
+            print("Beacon: M is " + str(beaconFinal))
 
 print("Total Scan: " + str(scanCtr))
 print("Total Rotate: " + str(rotateCtr))
