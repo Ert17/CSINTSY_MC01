@@ -1,23 +1,22 @@
 import tkinter as tk
 class GameBoard(tk.Frame):
-    def __init__(self, parent, gridsize, size=16, color1="white", color2="blue"):
+    def __init__(self, parent, rows=8, columns=8, size=12, color1="white", color2="blue"):
         '''size is the size of a square, in pixels'''
 
-        self.rows = gridsize
-        self.columns = gridsize
+        self.rows = rows
+        self.columns = columns
         self.size = size
         self.color1 = color1
         self.color2 = color2
         self.pieces = {}
 
-        canvas_width = gridsize * size
-        canvas_height = gridsize * size
+        canvas_width = columns * size
+        canvas_height = rows * size
 
         tk.Frame.__init__(self, parent)
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0,
-                                width=canvas_width, height=canvas_height, background="white")
-        self.canvas.grid(row = 0 ,column = 0, pady=2, expand="True")
-        #pack(side="top", fill="both", expand=True, padx=2, pady=2)
+                                width=canvas_width, height=canvas_height, background="bisque")
+        self.canvas.pack(side="top", fill="both", expand=True, padx=2, pady=2)
 
         # this binding will cause a refresh if the user interactively
         # changes the window size
@@ -58,51 +57,25 @@ class GameBoard(tk.Frame):
 
 
 # image comes from the silk icon set which is under a Creative Commons
-# license. For more information see http://www.famfamfam.com/lab/icons/silk/
-imagedata = '''
-    R0lGODlhEAAQAOeSAKx7Fqx8F61/G62CILCJKriIHM+HALKNMNCIANKKANOMALuRK7WOVLWPV9eR
-    ANiSANuXAN2ZAN6aAN+bAOCcAOKeANCjKOShANKnK+imAOyrAN6qSNaxPfCwAOKyJOKyJvKyANW0
-    R/S1APW2APW3APa4APe5APm7APm8APq8AO28Ke29LO2/LO2/L+7BM+7BNO6+Re7CMu7BOe7DNPHA
-    P+/FOO/FO+jGS+/FQO/GO/DHPOjBdfDIPPDJQPDISPDKQPDKRPDIUPHLQ/HLRerMV/HMR/LNSOvH
-    fvLOS/rNP/LPTvLOVe/LdfPRUfPRU/PSU/LPaPPTVPPUVfTUVvLPe/LScPTWWfTXW/TXXPTXX/XY
-    Xu/SkvXZYPfVdfXaY/TYcfXaZPXaZvbWfvTYe/XbbvHWl/bdaPbeavvadffea/bebvffbfbdfPvb
-    e/fgb/Pam/fgcvfgePTbnfbcl/bfivfjdvfjePbemfjelPXeoPjkePbfmvffnvbfofjlgffjkvfh
-    nvjio/nnhvfjovjmlvzlmvrmpvrrmfzpp/zqq/vqr/zssvvvp/vvqfvvuPvvuvvwvfzzwP//////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////yH+FUNyZWF0ZWQgd2l0aCBU
-    aGUgR0lNUAAh+QQBCgD/ACwAAAAAEAAQAAAIzAD/CRxIsKDBfydMlBhxcGAKNIkgPTLUpcPBJIUa
-    +VEThswfPDQKokB0yE4aMFiiOPnCJ8PAE20Y6VnTQMsUBkWAjKFyQaCJRYLcmOFipYmRHzV89Kkg
-    kESkOme8XHmCREiOGC/2TBAowhGcAyGkKBnCwwKAFnciCAShKA4RAhyK9MAQwIMMOQ8EdhBDKMuN
-    BQMEFPigAsoRBQM1BGLjRIiOGSxWBCmToCCMOXSW2HCBo8qWDQcvMMkzCNCbHQga/qMgAYIDBQZU
-    yxYYEAA7
-'''
+minerImg = 'miner.png'
+pitImg = 'pit.png'
+goldImg = 'gold.png'
+beaconImg = 'beacon.png'
+
 
 
 if __name__ == "__main__":
     root = tk.Tk()
     board = GameBoard(root)
-    board.grid(row=0, column=0)
-    #pack(side="top", fill="both", expand="true", padx=4, pady=4)
+    board.pack(side="top", fill="both", expand="true", padx=4, pady=4)
 
-    statFrame = tk.LabelFrame(root, text="Miner Statistics", padx=5, pady=5)
+    miner = tk.PhotoImage(file=minerImg)
+    pit = tk.PhotoImage(file=pitImg)
+    gold = tk.PhotoImage(file=goldImg)
+    beacon = tk.PhotoImage(file=beaconImg)
 
-    scanLbl = tk.Label(statFrame, text="Scan Count: ").grid(row=0, column=0)
-    rotateLbl = tk.Label(statFrame, text="Rotate Count: ").grid(row=1, column=0)
-    moveLbl = tk.Label(statFrame, text="Move Count: ").grid(row=2, column=0)
-    totalLbl = tk.Label(statFrame, text="Total Count: ").grid(row=3, column=0)
-
-    scanCtLbl = tk.Label(statFrame, text="0").grid(row=0, column=1)
-    rotateCtLbl = tk.Label(statFrame, text="0").grid(row=1, column=1)
-    moveCtLbl = tk.Label(statFrame, text="0").grid(row=2, column=1)
-    totalCtLbl = tk.Label(statFrame, text="0").grid(row=3, column=1)
-
-    statFrame.grid(row=0, column=1)
-    #pack(side="right", fill="both", expand="true",padx=4, pady=4)
-
-    player1 = tk.PhotoImage(data=imagedata)
-    board.addpiece("player1", player1, 0,0)
+    board.addpiece("miner", miner, 0,0)
+    board.addpiece("pit", pit, 1,1)
+    board.addpiece("beacon", beacon, 7,3)
+    board.addpiece("gold", gold, 5, 5)
     root.mainloop()

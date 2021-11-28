@@ -75,7 +75,7 @@ def smartLevel():
     global pastCoors
     global scanChecker
 
-
+'''-------'''
     for pastCoor in pastCoors:
         if miner[1][0] == pastCoor[0] and miner[1][1] == pastCoor[1]:
             print ("in pastCoor func")
@@ -89,7 +89,7 @@ def smartLevel():
 
     print("Returning Move")
     return 3 #move
-
+'''---------'''
 def userInputLevel():
     act = int(input("Act: "))
     return act
@@ -339,6 +339,9 @@ while (not valid):
         print("Invalid Input")
 
 ''' --------------------MAIN--------------------------'''
+# scanChecker = 0
+# scanResults = []
+# totRotate = 0
 checker = True
 print("start: " + str(miner) + " direction: " + str(direction))
 act = 0
@@ -350,7 +353,40 @@ while checker:
     if level == 1:
         act = randomLevel()
     elif level == 2:
-        act = smartLevel()
+        # act = smartLevel()
+    ''' ----TRY SMART based on Jaira
+
+    if (scannerChecker != 1):
+            act = 1                 #scan
+            scannerChecker = 1
+    else:
+        act = 2                 #rotate
+        scannerChecker = 0;
+        totRotate = totRotate + 1
+
+    if (totRotate >= 4 and scanResult[0] == 'Null'):
+        act = 4                 #smartmove
+        scanResults = []
+        scannerChecker = 0
+        totRotate = 0
+    else:
+        if (scanResult[0] == 'P'):
+            act = 4             #smartRotate
+            // call movefunction
+            act = 3
+
+            scannerChecker = 0
+
+    -----
+
+    elif (act == 4):           #smartMove
+        act = forward          #move
+        // call function ng Moves
+        act = 2                #rotate
+
+
+    End of Try Smart ----'''
+
     elif level == 3:
         act = userInputLevel()
 
@@ -358,20 +394,34 @@ while checker:
     if (act == 1): # Scan
         # print result
         result = scan(grid)
+        # update action
+        # update result
+        # add to counter
         print("nag-scan: " + str(miner) + " direction: " + str(direction) + " result: " + result)
         #act += 1
 
     elif (act == 2): # Rotate
         rotate()
+        # update direction
+        # add to counter
         print("nag-rotate: " + str(miner) + " direction: " + str(direction))
         #act += 1
 
     elif (act == 3): # Move
         move()
+        # place piece
+        # add to counter
         print("normal move: " + str(miner) + " direction: " + str(direction))
        # 1 - right, 2 - down, 3 - left, 4 - up
         # if edge -> rotate x 1
         moveCtr += 1
+
+
+        '''----Jaira Continuation----
+
+        scanResults.append (results)
+
+        ----Jaira Cont Ending----'''
 
         '''---------CHECKERS-----------'''
     #if gold
@@ -390,6 +440,7 @@ while checker:
         if miner[0][0] == b[0] and miner[0][1] == b[1]:
             beaconFinal = beacon(gold, miner[0])
             # value of m; beacon's distance from Gold
+            # return result
             print("Beacon: M is " + str(beaconFinal))
 
 print("Total Scan: " + str(scanCtr))
