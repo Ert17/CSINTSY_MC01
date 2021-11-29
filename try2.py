@@ -15,6 +15,7 @@ pastCoors = [[1,1]] #array for the coordinates na nadaan na
 scanCtr = 0
 rotateCtr = 0
 moveCtr = 0
+totalCtr = 0
 scanChecker = 0
 grid = 8
 levels = ["Random", "Smart"]
@@ -130,8 +131,11 @@ def scan(grid): #Miner picked 1
     global direction
     global miner
     global scanCtr
+    global totalCtr
 
+    totalCtr += 1
     scanCtr += 1
+
 
     x = miner[0][0]
     y = miner[0][1]
@@ -189,6 +193,12 @@ def scan(grid): #Miner picked 1
 def rotate(): #Miner picked 2
     global miner
     global direction
+    global rotateCtr
+    global totalCtr
+
+    totalCtr += 1
+    rotateCtr += 1
+
     frontX = miner[0][0]
     frontY = miner[0][1]
 
@@ -217,9 +227,6 @@ def rotate(): #Miner picked 2
         miner[1][1] = (frontY + 1)
         direction = 1
 
-    global rotateCtr
-    rotateCtr += 1
-
 
 def move(): #Miner picked 3
     global miner
@@ -243,6 +250,16 @@ def move(): #Miner picked 3
         miner[1][1] = frontY - 1
     elif direction == 4:  # up
         miner[1][0] = frontX - 1
+
+
+def beacon(gold, miner):
+    #Shortest distance of beacon to gold
+    a = abs(gold[0] - miner[0])
+    b = abs(gold[1] - miner[1])
+    beacon = a + b
+    print("nasa beacon function")
+
+    return beacon
 
 
 def initializeElements():
@@ -362,6 +379,8 @@ def randomLevel():
     print("in randomLevel")
     global miner
     global pastCoors
+    global moveCtr
+    global totalCtr
 
     for pastCoor in pastCoors:
         if miner[1][0] == pastCoor[0] and miner[1][1] == pastCoor[1]:
@@ -375,6 +394,9 @@ def randomLevel():
         return 2 #rotate
 
     print("Returning Move")
+
+    totalCtr += 1
+    moveCtr+=1
     return 3 #move
 
 
@@ -384,7 +406,7 @@ def showGrid():
     global level
     global pits, beacons, gold
     global miner, direction
-    global moveCtr
+    global scanCtDisplay, rotateCtDisplay, moveCtDisplay
     #global pastCoors
 
     pits = []
@@ -405,7 +427,7 @@ def showGrid():
     initializeElements()
 
     gridWin = tk.Toplevel()
-    gridWin.resizable(True, True)
+    gridWin.resizable(False, False)
 
     gridFrame = tk.LabelFrame(gridWin, padx=5, pady=5)
     gridFrame.grid(row=0, column=0, pady=10)
@@ -446,16 +468,39 @@ def showGrid():
     statFrame.grid(row=0, column=1, padx=10, pady=10)
 
     directionLbl = tk.Label(statFrame, text="Miner Direction: ").grid(row=0, column=0)
-    scanLbl = tk.Label(statFrame, text="Scan Count: ").grid(row=1, column=0)
-    rotateLbl = tk.Label(statFrame, text="Rotate Count: ").grid(row=2, column=0)
-    moveLbl = tk.Label(statFrame, text="Move Count: ").grid(row=3, column=0)
-    totalLbl = tk.Label(statFrame, text="Total Count: ").grid(row=4, column=0)
+    scanRtnLbl = tk.Label(statFrame, text="Scan Return: ").grid(row=1, column=0)
+    beacRtnLbl = tk.Label(statFrame, text="Beacon Return: ").grid(row=2, column=0)
+    scanLbl = tk.Label(statFrame, text="Scan Count: ").grid(row=3, column=0)
+    rotateLbl = tk.Label(statFrame, text="Rotate Count: ").grid(row=4, column=0)
+    moveLbl = tk.Label(statFrame, text="Move Count: ").grid(row=5, column=0)
+    totalLbl = tk.Label(statFrame, text="Total Count: ").grid(row=6, column=0)
+    gameStateLbl = tk.Label(statFrame, text="Game State: ").grid(row=7, column=0)
 
-    dirresultLbl = tk.Label(statFrame, text="R").grid(row=0, column=1)
-    scanCtLbl = tk.Label(statFrame, text="0").grid(row=1, column=1)
-    rotateCtLbl = tk.Label(statFrame, text="0").grid(row=2, column=1)
-    moveCtLbl = tk.Label(statFrame, text="0").grid(row=3, column=1)
-    totalCtLbl = tk.Label(statFrame, text="0").grid(row=4, column=1)
+    dirRText = tk.StringVar()
+    dirresultDisplay = tk.Label(statFrame, textvariable = dirRText).grid(row=0, column=1)
+    scanRText = tk.StringVar()
+    scanRtndisplay = tk.Label(statFrame, textvariable = scanRText).grid(row=1, column=1)
+    beaconText = tk.StringVar()
+    beacRtnDisplay = tk.Label(statFrame, textvariable = beaconText).grid(row=2, column=1)
+    scanText = tk.StringVar()
+    scanCtDisplay = tk.Label(statFrame, textvariable = scanText).grid(row=3, column=1)
+    rotateText = tk.StringVar()
+    rotateCtDisplay = tk.Label(statFrame, textvariable = rotateText).grid(row=4, column=1)
+    moveText = tk.StringVar()
+    moveCtDisplay = tk.Label(statFrame, textvariable = moveText).grid(row=5, column=1)
+    totalText = tk.StringVar()
+    totalCtDisplay = tk.Label(statFrame, textvariable = totalText).grid(row=6, column=1)
+    gameText = tk.StringVar()
+    gameStateDisplay = tk.Label(statFrame, textvariable = gameText).grid(row=7, column=1, columnspan=2)
+
+    dirRText.set("R")
+    scanRText.set(" ")
+    beaconText.set(" ")
+    scanText.set("0")
+    rotateText.set("0")
+    moveText.set("0")
+    totalText.set("0")
+    gameText.set(" ")
 
     gridWin.update()
     #callMain(t, gridWin)
@@ -471,40 +516,50 @@ def showGrid():
             act = smartLevel()
 
         if (act == 1): # Scan
-            # print result
+
             result = scan(grid)
-            # update action
-            # update result
-            # add to counter
+            scanText.set(str(scanCtr))
+            totalText.set(str(totalCtr))
+
             print("nag-scan: " + str(miner) + " direction: " + str(direction) + " result: " + result)
-            #act += 1
 
         elif (act == 2): # Rotate
             rotate()
+
+            rotateText.set(str(rotateCtr))
+            totalText.set(str(totalCtr))
+
             # update direction
-            # add to counter
+            if direction is 1:
+                dirRText.set("R")
+            elif direction is 2:
+                dirRText.set("D")
+            elif direction is 3:
+                dirRText.set("L")
+            elif direction is 4:
+                dirRText.set("U")
+
             print("nag-rotate: " + str(miner) + " direction: " + str(direction))
-            #act += 1
 
         elif act == 3:
             frontX = miner[1][0] - 1
             frontY = miner[1][1] - 1
             move()
+            moveText.set(str(moveCtr))
+            totalText.set(str(totalCtr))
 
             print("normal move: " + str(miner) + " direction: " + str(direction))
 
-           # 1 - right, 2 - down, 3 - left, 4 - up
-            # if edge -> rotate x 1
-            moveCtr += 1
-
             #if gold
             if miner[0][0] == gold[0] and miner[0][1] == gold[1]:
+                gameText.set("Win")
                 print("yey winner: " + str(miner) + " direction: " + str(direction))
                 checker = False
 
             #if pit
             for p in pits:
                 if miner[0][0] == p[0] and miner[0][1] == p[1]:
+                    gameText.set("Lose")
                     checker = False
                     print("ew loser" + str(miner) + " direction: " + str(direction))
 
@@ -512,6 +567,7 @@ def showGrid():
             for b in beacons:
                 if miner[0][0] == b[0] and miner[0][1] == b[1]:
                     beaconFinal = beacon(gold, miner[0])
+                    beaconText.set(str(beaconFinal))
                     # value of m; beacon's distance from Gold
                     # return result
                     print("Beacon: M is " + str(beaconFinal))
@@ -521,34 +577,7 @@ def showGrid():
         gridWin.update()
         time.sleep(1)
 
-
-        if miner[0][0] == gold[0] and miner[0][1] == gold[1]:
-            print("yey winner: " + str(miner) + " direction: " + str(direction))
-            checker = False
-
-        #if pit
-        for p in pits:
-            if miner[0][0] == p[0] and miner[0][1] == p[1]:
-                checker = False
-                print("ew loser" + str(miner) + " direction: " + str(direction))
-
-        #if beacon
-        for b in beacons:
-            if miner[0][0] == b[0] and miner[0][1] == b[1]:
-                beaconFinal = beacon(gold, miner[0])
-                # value of m; beacon's distance from Gold
-                # return result
-                print("Beacon: M is " + str(beaconFinal))
-
-        print("Total Scan: " + str(scanCtr))
-        print("Total Rotate: " + str(rotateCtr))
-        print("Total Move: " + str(moveCtr))
-
-        #t.refresh()
-
-
     gridWin.mainloop()
-
 
 if __name__ == "__main__":
     ''' ------------------- INITIALIZATION WINDOW -------------------------- '''
