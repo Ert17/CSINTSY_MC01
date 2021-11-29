@@ -17,8 +17,12 @@ rotateCtr = 0
 moveCtr = 0
 totalCtr = 0
 scanChecker = 0
+scanResults = []
+totalRotate = 0
+needRotate = 0
 grid = 8
 levels = ["Random", "Smart"]
+views = ["Fast", "Step"]
 level = None
 
 ''' ------------------- Grid Class -------------------------- '''
@@ -149,9 +153,6 @@ def scan(grid): #Miner picked 1
 
     content.append([gold[0], gold[1], "G"])
 
-    print("SCAN: x - " + str(x) + " y - " + str(y))
-    print("Contents: " + str(content))
-
     if direction == 1: # Right
         front = y + 1
         while front <= grid:
@@ -204,25 +205,21 @@ def rotate(): #Miner picked 2
 
     #facing right
     if direction == 1:
-        print("facing right cond")
         miner[1][0] = (frontX + 1)
         miner[1][1] = frontY
         direction = 2
     #facing down
     elif direction == 2:
-        print("facing down cond")
         miner[1][0] = frontX
         miner[1][1] = (frontY - 1)
         direction = 3
     #facing left
     elif direction == 3:
-        print("facing left cond")
         miner[1][0] = (frontX - 1)
         miner[1][1] = frontY
         direction = 4
     #facing up
     elif direction == 4:
-        print("facing up cond")
         miner[1][0] = frontX
         miner[1][1] = (frontY + 1)
         direction = 1
@@ -257,10 +254,8 @@ def beacon(gold, miner):
     a = abs(gold[0] - miner[0])
     b = abs(gold[1] - miner[1])
     beacon = a + b
-    print("nasa beacon function")
 
     return beacon
-
 
 def initializeElements():
     global gold
@@ -327,18 +322,8 @@ def initializeElements():
             else:
                 print("Invalid coordinate for beacon")
 
-
-        #        for p in pits:
-        #            if beaX == p[0] and beaY == p[1]:
-        #                duplicate = True
-
-
     for i in range(pitval):
 
-        '''---asking for pit--'''
-            # as long as not miner, gold, and beacon/s position
-            # as long as greater than 0
-            # as long as less than or equal to grid size
         valid = False
         while not valid:
             pitX = random.randint(1, grid)
@@ -366,6 +351,7 @@ def initializeElements():
                 print("Invalid coordinate for pit")
 
     level = 0
+    '''
     while (not valid):
         print("[1] Random\n[2] Smart\n[3] User Input")
         level = int(input("Choose Level: "))
@@ -373,10 +359,10 @@ def initializeElements():
             valid = True
         else:
             print("Invalid Input")
+    '''
 
 
 def randomLevel():
-    print("in randomLevel")
     global miner
     global pastCoors
     global moveCtr
@@ -384,20 +370,85 @@ def randomLevel():
 
     for pastCoor in pastCoors:
         if miner[1][0] == pastCoor[0] and miner[1][1] == pastCoor[1]:
-            print ("in pastCoor func")
             return 2 #rotate
 
     # if out of bounds
     bounds = OOB()
     if bounds:
-        print("in OOB func")
         return 2 #rotate
-
-    print("Returning Move")
 
     totalCtr += 1
     moveCtr+=1
     return 3 #move
+
+
+def smartLevel():
+    print("in smartLevel")
+    global miner
+    global pastCoors
+    global scanChecker
+    global moveCtr
+    global totalCtr
+    global scanResults
+    global totalRotate
+    global needRotate
+
+    print("Total Rotate: " + str(totalRotate))
+
+    for pastCoor in pastCoors:
+        if miner[1][0] == pastCoor[0] and miner[1][1] == pastCoor[1]:
+            return 2 #rotate
+
+    # if out of bounds
+    bounds = OOB()
+    if bounds:
+        return 2 #rotate
+
+    if totalRotate >= 4:
+        if scanResults[0] is not 'P':
+            print("Pumasok sa if\n")
+
+            if scanResults[0] == 'G':
+                # totalRotate remains at 4, agent keeps doing MOVE til Gold
+                moveCtr += 1
+                totalCtr += 1
+                return 3
+            elif scanResults[0] == 'Null' or scanResults[0] == 'B':
+                #smartmove -> move + rotate
+                moveCtr += 1
+                totalCtr += 1
+
+                scanResults = []
+                scanChecker = 0
+                totalRotate = 0
+                return 4 #smartmove -> move + rotate
+
+        else:
+            for r in range(1, 3):
+                if scanResults[r] == 'G':
+                    needRotate = r
+                    scanChecker = 0
+                    break
+                elif scanResults[r] == 'B':
+                    needRotate = r
+                    scanChecker = 0
+                    totalRotate = 0
+                    break
+                elif scanResults[r] == 'Null':
+                    needRotate = r
+                    break
+
+            return 5 #smart rotate -> rotate N times then move
+    else:
+        #need to put condition kung less than counter tapos Gold yung nadetect
+        #if scanResults
+        if scanChecker is not 1:
+            scanChecker = 1
+            return 1                 #scan
+        else:
+            scanChecker = 0
+            totalRotate += 1
+            return 2                 #rotate
 
 
 def showGrid():
@@ -407,7 +458,8 @@ def showGrid():
     global pits, beacons, gold
     global miner, direction
     global scanCtDisplay, rotateCtDisplay, moveCtDisplay
-    #global pastCoors
+    global scanChecker, scanResults, totalRotate
+    global needRotate
 
     pits = []
     beacons = []
@@ -503,7 +555,7 @@ def showGrid():
     gameText.set(" ")
 
     gridWin.update()
-    #callMain(t, gridWin)
+
     checker = True
     print("start: " + str(miner) + " direction: " + str(direction))
     act = 0
@@ -518,10 +570,14 @@ def showGrid():
         if (act == 1): # Scan
 
             result = scan(grid)
+            scanResults.append(result)
+            print(scanResults)
+
+            #GUI
             scanText.set(str(scanCtr))
             totalText.set(str(totalCtr))
 
-            print("nag-scan: " + str(miner) + " direction: " + str(direction) + " result: " + result)
+            print("SCAN in position: " + str(miner) + " DIRECTION: " + str(direction) + " RESULT: " + result)
 
         elif (act == 2): # Rotate
             rotate()
@@ -539,29 +595,29 @@ def showGrid():
             elif direction is 4:
                 dirRText.set("U")
 
-            print("nag-rotate: " + str(miner) + " direction: " + str(direction))
+            print("ROTATE in position: " + str(miner) + " DIRECTION: " + str(direction))
 
-        elif act == 3:
+        elif (act == 3):
             frontX = miner[1][0] - 1
             frontY = miner[1][1] - 1
             move()
             moveText.set(str(moveCtr))
             totalText.set(str(totalCtr))
 
-            print("normal move: " + str(miner) + " direction: " + str(direction))
+            print("MOVED to position: " + str(miner) + " DIRECTION: " + str(direction))
 
             #if gold
             if miner[0][0] == gold[0] and miner[0][1] == gold[1]:
                 gameText.set("Win")
-                print("yey winner: " + str(miner) + " direction: " + str(direction))
+                print("GOLD in position: " + str(miner) + " DIRECTION: " + str(direction))
                 checker = False
 
             #if pit
             for p in pits:
                 if miner[0][0] == p[0] and miner[0][1] == p[1]:
                     gameText.set("Lose")
+                    print("PIT in position: " + str(miner) + " DIRECTION: " + str(direction))
                     checker = False
-                    print("ew loser" + str(miner) + " direction: " + str(direction))
 
             #if beacon
             for b in beacons:
@@ -570,12 +626,122 @@ def showGrid():
                     beaconText.set(str(beaconFinal))
                     # value of m; beacon's distance from Gold
                     # return result
-                    print("Beacon: M is " + str(beaconFinal))
+                    print("BEACON in position: " + str(miner) + " DIRECTION: " + str(direction) + " RESULT: " + str(beaconFinal))
 
             t.placepiece("miner", frontX, frontY)
 
+        elif (act == 4):
+            frontX = miner[1][0] - 1
+            frontY = miner[1][1] - 1
+            move()
+            moveText.set(str(moveCtr))
+            totalText.set(str(totalCtr))
+
+            print("MOVED to position: " + str(miner) + " DIRECTION: " + str(direction))
+
+            #if gold
+            if miner[0][0] == gold[0] and miner[0][1] == gold[1]:
+                gameText.set("Win")
+                print("GOLD in position: " + str(miner) + " DIRECTION: " + str(direction))
+                checker = False
+
+            #if pit
+            for p in pits:
+                if miner[0][0] == p[0] and miner[0][1] == p[1]:
+                    gameText.set("Lose")
+                    print("PIT in position: " + str(miner) + " DIRECTION: " + str(direction))
+                    checker = False
+
+            #if beacon
+            for b in beacons:
+                if miner[0][0] == b[0] and miner[0][1] == b[1]:
+                    beaconFinal = beacon(gold, miner[0])
+                    beaconText.set(str(beaconFinal))
+                    # value of m; beacon's distance from Gold
+                    # return result
+                    print("BEACON in position: " + str(miner) + " DIRECTION: " + str(direction) + " RESULT: " + str(beaconFinal))
+
+            t.placepiece("miner", frontX, frontY)
+
+            rotate()
+
+            rotateText.set(str(rotateCtr))
+            totalText.set(str(totalCtr))
+
+            # update direction
+            if direction is 1:
+                dirRText.set("R")
+            elif direction is 2:
+                dirRText.set("D")
+            elif direction is 3:
+                dirRText.set("L")
+            elif direction is 4:
+                dirRText.set("U")
+
+            print("ROTATE in position: " + str(miner) + " DIRECTION: " + str(direction))
+
+        elif (act == 5):
+            for n in range(0, needRotate):
+                rotate()
+                rotateText.set(str(rotateCtr))
+                totalText.set(str(totalCtr))
+
+                # update direction
+                if direction is 1:
+                    dirRText.set("R")
+                elif direction is 2:
+                    dirRText.set("D")
+                elif direction is 3:
+                    dirRText.set("L")
+                elif direction is 4:
+                    dirRText.set("U")
+
+            scanResults = []
+            scanChecker = 0
+            totalRotate = 0
+
+            print("ROTATE in position: " + str(miner) + " DIRECTION: " + str(direction))
+
+            frontX = miner[1][0] - 1
+            frontY = miner[1][1] - 1
+            move()
+            moveText.set(str(moveCtr))
+            totalText.set(str(totalCtr))
+
+            print("MOVED to position: " + str(miner) + " DIRECTION: " + str(direction))
+
+            #if gold
+            if miner[0][0] == gold[0] and miner[0][1] == gold[1]:
+                gameText.set("Win")
+                print("GOLD in position: " + str(miner) + " DIRECTION: " + str(direction))
+                checker = False
+
+            #if pit
+            for p in pits:
+                if miner[0][0] == p[0] and miner[0][1] == p[1]:
+                    gameText.set("Lose")
+                    print("PIT in position: " + str(miner) + " DIRECTION: " + str(direction))
+                    checker = False
+
+            #if beacon
+            for b in beacons:
+                if miner[0][0] == b[0] and miner[0][1] == b[1]:
+                    beaconFinal = beacon(gold, miner[0])
+                    beaconText.set(str(beaconFinal))
+                    # value of m; beacon's distance from Gold
+                    # return result
+                    print("BEACON in position: " + str(miner) + " DIRECTION: " + str(direction) + " RESULT: " + str(beaconFinal))
+
+            t.placepiece("miner", frontX, frontY)
+            
         gridWin.update()
-        time.sleep(1)
+
+        if view_val.get() == "Fast":
+            ts = 0.3
+        elif view_val.get() == "Step":
+            ts = 1.5
+
+        time.sleep(ts)
 
     gridWin.mainloop()
 
@@ -596,14 +762,20 @@ if __name__ == "__main__":
 
     GMLbl = tk.Label(root, text="Gold Miner", font=('Arial', 32, 'bold')).grid(row=0, columnspan=2)
     GridLbl = tk.Label(root, text="Grid Size").grid(row=1, column=0)
+    LevelLbl = tk.Label(root, text="Level").grid(row=2, column=0)
+    ViewLbl = tk.Label(root, text="View").grid(row=3, column=0)
     gridSize = tk.IntVar()
     GridEnt = tk.Spinbox(root, width = 2, from_ = 8, to = 64, textvariable = gridSize).grid(row=1, column=1)
 
     level_val = tk.StringVar()
-    levelDrp = ttk.Combobox(root, value=levels, width=10, textvariable=level_val)
+    levelDrp = ttk.Combobox(root, value=levels, width=8, textvariable=level_val)
     levelDrp.current(0)
-    levelDrp.grid(row=2, columnspan=2)
-    BeginBtn = tk.Button(root, text="Begin", font=('Arial', 12, 'bold'), width=20, height=2, command = showGrid).grid(row=3, columnspan=2, pady=10)
+    levelDrp.grid(row=2, column=1, columnspan=2)
+    view_val = tk.StringVar()
+    viewDrp = ttk.Combobox(root, value=views, width=8, textvariable=view_val)
+    viewDrp.current(0)
+    viewDrp.grid(row=3, column=1, columnspan=2)
+    BeginBtn = tk.Button(root, text="Begin", font=('Arial', 12, 'bold'), width=20, height=2, command = showGrid).grid(row=4, columnspan=2, pady=10)
 
 
     root.mainloop()
